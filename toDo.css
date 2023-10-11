@@ -1,0 +1,169 @@
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    background-color: rgb(62, 61, 61);
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+.main {
+    width: 70%;
+    height: 95%;
+    display: flex;
+    flex-direction: column;
+    
+}
+.nav {
+    max-height: 10%;
+    background-color: black;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+.nav h1 {
+    color: white;
+}
+.nav-icons {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+.lists {
+    width: 100%;
+    height: 90%;
+    display: flex;
+    flex-direction: row;
+}
+.left {
+    background-color: rgb(229, 229, 229);
+    width: 30%;
+    height: 100%;
+    justify-content: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.right {
+    width: 70%;
+    height: 100%;
+    background-color: white;
+}
+
+/*Left lists*/
+
+#new-list {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 0 10px 5px;
+    outline: none;
+}
+.all-lists {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 80%;
+    text-align: center;
+    gap: 5px;
+}
+#current i {
+    color: white;
+}
+#current {
+    background-color: gray;
+    color: white;
+    height: 50px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 35%;
+    align-items: center;
+}
+i {
+    color: rgb(255, 255, 255);
+}
+#current div {
+    display: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.added-list div {
+    color: white;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.added-list i {
+    color: gray;
+    font-size: larger;
+}
+.added-list {
+    
+    padding-right: 20px;
+    border: 1px solid gray;
+    height: 50px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 35%;
+    align-items: center;
+}
+.test p, .added-list p{
+    margin: 0;
+}
+
+/*Right side*/
+ .todo-list {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 5px;
+        }
+
+        button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d32f2f;
+        }
+  p {
+    margin: 0;
+    padding: 0;
+  }
+   
+
+
+
+
