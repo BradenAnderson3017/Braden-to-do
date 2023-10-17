@@ -63,21 +63,25 @@ function rightSideList() {
   this.setAttribute("id", "current");
 
   let myToDoList = `<div class="todo-list">
-  <h2 id="title" class="${this.textContent}">${this.textContent}</h2>
+  <p id="title" class="${this.textContent}">${this.textContent}</p>
   <ul class="taskContainer" id="taskContainer">
   </ul>
-  <input id="newTask" type="text" placeholder="Add a new task">
-  <button id="taskButton">Add</button>`;
+  <input id="newTask" type="text" placeholder="+ Add a new to do and hit enter">`;
 
   let rightLists = document.getElementById("right");
   rightLists.innerHTML = myToDoList;
 
-  let taskButton = document.getElementById("taskButton");
-  taskButton.addEventListener("click", newToDoItem);
+  let taskInput = document.getElementById("newTask");
+
+  // Add event listener for the Enter key
+  taskInput.addEventListener("keydown", function (event) {
+    newToDoItem(event); // Pass the event object to the newToDoItem function
+  });
 
   let title = this.textContent; // Get the title of the selected list
   previousItems(title);
   save();
+  editingItems();
 }
 
 //checks to see if the input value already exists
@@ -85,15 +89,20 @@ function inputCheck() {
   if (!createdListArr.includes(newList.value)) {
     let listItem = document.createElement("div");
     let listIcon = document.createElement("div");
+    let listCircle = document.createElement("div");
+    let circleText = document.createElement("div");
+    circleText.classList.add("circleText");
+    circleText.prepend(listCircle, newList.value)
+    listCircle.classList.add("listCircle");
     listIcon.classList.add("listIcons");
     listItem.classList.add("added-list");
     if (newList.value.length === 0) {
       newList.placeholder = "You Need to Name Your List!";
     } else {
-      listItem.textContent = newList.value;
-      //listItem.textContent = contenteditable;
+      
+      listItem.prepend(circleText)
       listContainer.prepend(listItem);
-      listIcon.innerHTML = `<i class="icon fa-solid fa-xmark"></i>`;
+      listIcon.innerHTML = `<i id=taskButton class="fa-regular fa-trash-can" style="color: #4772FA;"></i>`;
       listItem.append(listIcon);
       listItem.setAttribute("id", newList.value);
       newList.placeholder = "Enter List Name...";
@@ -117,48 +126,50 @@ function inputCheck() {
 //function to add new todo item on right side of screen and saves to data structure
 
 function newToDoItem(event) {
-  event.preventDefault();
+  if (event && event.key === "Enter") {
+    let taskInput = document.getElementById("newTask");
+    let emptyDiv = document.createElement("li");
+    emptyDiv.classList.add("todo-item");
 
-  let taskInput = document.getElementById("newTask");
-  let emptyDiv = document.createElement("li");
-  emptyDiv.classList.add("todo-item");
+    if (taskInput.value.length === 0) {
+      taskInput.placeholder = "You Need to Name Your Item!";
+    } else {
+      //adding todos to data structure when you click add button
+      let title = document.getElementById("title").textContent;
+      for (let listId in lists) {
+        if (lists[listId].name === title) {
+          let newToDoArr = {
+            text: taskInput.value,
+            completed: false,
+          };
+          lists[listId].toDos.push(newToDoArr);
 
-  if (taskInput.value.length === 0) {
-    taskInput.placeholder = "You Need to Name Your Item!";
-  } else {
-    //adding todos to data structure when you click add button
-    let title = document.getElementById("title").textContent;
-    for (let listId in lists) {
-      if (lists[listId].name === title) {
-        let newToDoArr = {
-          text: taskInput.value,
-          completed: false,
-        };
-        lists[listId].toDos.push(newToDoArr);
+          taskInput.placeholder = "Enter To Do Name...";
 
-        taskInput.placeholder = "Enter To Do Name...";
+          let taskItem = `
+          <div class="checkboxContainer">
+            <input class="checkbox" type="checkbox">
+            <p id="${taskInput.value}">${taskInput.value}</p>
+          </div>
+          <div class="deleteButton">
+          <i class="fa-regular fa-trash-can" style="color: #4772FA;"></i>
+          </div>
+          `;
 
-        let taskItem = `
-        <input class="checkbox" type="checkbox">
-        <p id="${taskInput.value}">${taskInput.value}</p>
-        <button class="deleteButton">
-        <p>Delete</p>
-        </button>
-        `;
-
-        emptyDiv.innerHTML = taskItem;
-        let taskContainer = document.getElementById("taskContainer");
-        taskContainer.append(emptyDiv);
-        deletingItem();
-        checkbox();
-        save();
-        break;
+          emptyDiv.innerHTML = taskItem;
+          let taskContainer = document.getElementById("taskContainer");
+          taskContainer.append(emptyDiv);
+          deletingItem();
+          checkbox();
+          save();
+          editingItems();
+          break;
+        }
       }
     }
+    searchingItems();
+    taskInput.value = "";
   }
-  searchingItems();
-  taskInput.value = "";
-  
 }
 
 function previousItems(title) {
@@ -172,21 +183,22 @@ function previousItems(title) {
       todos.forEach((todo) => {
         let taskItem = document.createElement("li");
         taskItem.classList.add("todo-item");
-
         let checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.classList.add("checkbox");
-
+        let checkboxContainer = document. createElement('div');
+        checkboxContainer.classList.add('checkboxContainer')
         let taskText = document.createElement("p");
         taskText.textContent = todo.text;
         taskText.id = todo.text;
         save();
-        let deleteButton = document.createElement("button");
+        let deleteButton = document.createElement("div");
         deleteButton.classList.add("deleteButton");
-        deleteButton.innerHTML = "<p>Delete</p>";
+        deleteButton.innerHTML = `<i id=taskButton class="fa-regular fa-trash-can" style="color: #4772FA;"></i>`;
 
-        taskItem.appendChild(checkbox);
-        taskItem.appendChild(taskText);
+        checkboxContainer.appendChild(checkbox);
+        checkboxContainer.appendChild(taskText);
+        taskItem.appendChild(checkboxContainer);
         taskItem.appendChild(deleteButton);
 
         // Append the taskItem to the taskContainer
@@ -196,6 +208,7 @@ function previousItems(title) {
     deletingItem();
     checkbox();
     save();
+    editingItems();
   }
   searchingItems();
 }
@@ -217,10 +230,16 @@ function reloadMyLeft() {
 
       listItem.setAttribute("id", listId);
       listItem.classList.add("added-list");
-      listItem.textContent = savedLists[listId].name;
-
+      let listCircle = document.createElement("div");
+      let circleText = document.createElement("div");
+      circleText.classList.add("circleText");
+      //listItem.textContent = savedLists[listId].name;
+      //let words = (listItem.textContent);
+      circleText.prepend(listCircle, savedLists[listId].name);
+      listCircle.classList.add("listCircle");
+      listItem.prepend(circleText)
       listContainer.prepend(listItem);
-      listIcon.innerHTML = `<i class="icon fa-solid fa-xmark"></i>`;
+      listIcon.innerHTML = `<i id=taskButton class="fa-regular fa-trash-can" style="color: #4772FA;"></i>`;
       listItem.append(listIcon);
       let leftDivs = document.querySelector(".added-list");
       leftDivs.addEventListener("click", rightSideList);
@@ -229,38 +248,28 @@ function reloadMyLeft() {
   deletingList();
 }
 //deleting a to do item
-
 function deletingItem() {
-  const deleteButton = document.querySelectorAll(".deleteButton");
-  let todo = document.querySelector(".todo-item");
-  deleteButton.forEach((del) => {
-    del.addEventListener("click", addingEventListener);
-  });
-  function addingEventListener(event) {
-    for (let i in lists) {
-      for (let j in lists[i].toDos) {
-        let del = event.target.parentElement.parentElement;
-        let todo = event.target.parentElement.parentElement.querySelector("p");
-        if (del === todo) {
-          if (lists[i].toDos[j].text === todo.textContent) {
-            let index = lists[i].toDos.indexOf(lists[i].toDos[j]);
+  const deleteButtons = document.querySelectorAll(".deleteButton");
+  deleteButtons.forEach((del) => {
+    del.addEventListener("click", function(event) {
+      const todoText = event.target.parentElement.parentElement.querySelector('p').textContent;
+      for (let i in lists) {
+        for (let j in lists[i].toDos) {
+          const todo = lists[i].toDos[j];
+          if (todo.text === todoText) {
+            let index = lists[i].toDos.indexOf(todo);
             lists[i].toDos.splice(index, 1);
             save();
-
-            del.remove();
-          }
-        } else {
-          if (lists[i].toDos[j].text === todo.textContent) {
-            let index = lists[i].toDos.indexOf(lists[i].toDos[j]);
-            lists[i].toDos.splice(index, 1);
-            save();
-            todo.parentElement.remove();
+            event.target.parentElement.parentElement.remove();
+            break;
           }
         }
       }
-    }
-  }
+    });
+  });
 }
+
+
 //deleting the lists on the left
 function deletingList() {
   const listIcons = document.querySelectorAll(".listIcons");
@@ -295,7 +304,7 @@ function checkbox() {
         if (lists[i].toDos[j].text === todoText) {
           lists[i].toDos[j].completed = true;
           if ((lists[i].toDos[j].completed = true)) {
-            let del = event.target.parentElement;
+            let del = event.target.parentElement.parentElement;
             let index = lists[i].toDos.indexOf(lists[i].toDos[j]);
             lists[i].toDos.splice(index, 1);
             save();
@@ -336,22 +345,50 @@ function checkbox() {
 
 function searchingItems() {
   let search = document.getElementById("search");
-  
-  search.addEventListener("input", function() {
+
+  search.addEventListener("input", function () {
     let searchTerm = search.value.toLowerCase();
 
-    let todoItems = document.querySelectorAll('.todo-item');
+    let todoItems = document.querySelectorAll(".todo-item");
     todoItems.forEach((item) => {
       let itemText = item.firstChild.nextSibling.textContent.toLowerCase();
       if (itemText.includes(searchTerm)) {
-        item.style.display = '';
-        console.log(item)
+        item.style.display = "";
+        //console.log(item)
       } else {
-        item.style.display = 'none';
+        item.style.display = "none";
       }
     });
   });
 }
 
+function editingItems() {
+  let taskContainer = document.querySelector(".taskContainer");
+  taskContainer.addEventListener("click", function () {
+    let todosToEdit = document.querySelectorAll(".todo-item");
+    todosToEdit.forEach((item) => {
+      let itemText = item.firstChild.nextSibling;
+      //console.log(itemText);
+      itemText.addEventListener("click", function () {
+        //console.log("we made it this far");
+        let orginalItem = itemText.textContent;
+        itemText.setAttribute("contenteditable", true);
+        itemText.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            itemText.setAttribute("contenteditable", false);
+            itemText.setAttribute("id", itemText.textContent);
 
-
+            for (let i in lists) {
+              for (let j in lists[i].toDos) {
+                if (lists[i].toDos[j].text === orginalItem)
+                  lists[i].toDos[j].text = itemText.textContent;
+                save();
+              }
+            }
+          }
+        });
+      });
+    });
+  });
+}
