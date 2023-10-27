@@ -22,7 +22,6 @@ function save() {
   }
 
   localStorage.setItem("lists", JSON.stringify(lists));
-  localStorage.setItem("names", JSON.stringify(createdListArr));
 }
 
 function render() {
@@ -47,7 +46,6 @@ function render() {
   });
 
   inputCheck();
-  let leftListener = document.querySelector("#all-lists");
 
   let leftDivs = document.querySelector(".added-list");
   leftDivs.addEventListener("click", rightSideList);
@@ -67,18 +65,15 @@ function rightSideList() {
   <ul class="taskContainer" id="taskContainer">
   </ul>
   <input id="newTask" type="text" placeholder="+ Add a new to do and hit enter">`;
-
-  let rightLists = document.getElementById("right");
-  rightLists.innerHTML = myToDoList;
+  displayList(myToDoList);
 
   let taskInput = document.getElementById("newTask");
 
   // Add event listener for the Enter key
   taskInput.addEventListener("keydown", function (event) {
-    newToDoItem(event); // Pass the event object to the newToDoItem function
+    newToDoItem(event);
   });
-
-  let title = this.textContent; // Get the title of the selected list
+  let title = this.textContent;
   previousItems(title);
   save();
   editingItems();
@@ -92,15 +87,14 @@ function inputCheck() {
     let listCircle = document.createElement("div");
     let circleText = document.createElement("div");
     circleText.classList.add("circleText");
-    circleText.prepend(listCircle, newList.value)
+    circleText.prepend(listCircle, newList.value);
     listCircle.classList.add("listCircle");
     listIcon.classList.add("listIcons");
     listItem.classList.add("added-list");
     if (newList.value.length === 0) {
       newList.placeholder = "You Need to Name Your List!";
     } else {
-      
-      listItem.prepend(circleText)
+      listItem.prepend(circleText);
       listContainer.prepend(listItem);
       listIcon.innerHTML = `<i id=taskButton class="fa-regular fa-trash-can" style="color: #4772FA;"></i>`;
       listItem.append(listIcon);
@@ -118,7 +112,7 @@ function inputCheck() {
       }
     }
   }
-  save();
+  save(createdListArr);
   newList.value = "";
   deletingList();
 }
@@ -162,12 +156,13 @@ function newToDoItem(event) {
           deletingItem();
           checkbox();
           save();
+          searchingItems();
           editingItems();
+          attachEventListeners();
           break;
         }
       }
     }
-    searchingItems();
     taskInput.value = "";
   }
 }
@@ -186,12 +181,12 @@ function previousItems(title) {
         let checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.classList.add("checkbox");
-        let checkboxContainer = document. createElement('div');
-        checkboxContainer.classList.add('checkboxContainer')
+        let checkboxContainer = document.createElement("div");
+        checkboxContainer.classList.add("checkboxContainer");
         let taskText = document.createElement("p");
         taskText.textContent = todo.text;
         taskText.id = todo.text;
-        save();
+
         let deleteButton = document.createElement("div");
         deleteButton.classList.add("deleteButton");
         deleteButton.innerHTML = `<i id=taskButton class="fa-regular fa-trash-can" style="color: #4772FA;"></i>`;
@@ -237,22 +232,27 @@ function reloadMyLeft() {
       //let words = (listItem.textContent);
       circleText.prepend(listCircle, savedLists[listId].name);
       listCircle.classList.add("listCircle");
-      listItem.prepend(circleText)
+      listItem.prepend(circleText);
       listContainer.prepend(listItem);
       listIcon.innerHTML = `<i id=taskButton class="fa-regular fa-trash-can" style="color: #4772FA;"></i>`;
       listItem.append(listIcon);
+
+      displayList()
+
       let leftDivs = document.querySelector(".added-list");
       leftDivs.addEventListener("click", rightSideList);
     }
   }
   deletingList();
+  attachEventListeners();
 }
 //deleting a to do item
 function deletingItem() {
   const deleteButtons = document.querySelectorAll(".deleteButton");
   deleteButtons.forEach((del) => {
-    del.addEventListener("click", function(event) {
-      const todoText = event.target.parentElement.parentElement.querySelector('p').textContent;
+    del.addEventListener("click", function (event) {
+      const todoText =
+        event.target.parentElement.parentElement.querySelector("p").textContent;
       for (let i in lists) {
         for (let j in lists[i].toDos) {
           const todo = lists[i].toDos[j];
@@ -269,29 +269,28 @@ function deletingItem() {
   });
 }
 
-
 //deleting the lists on the left
 function deletingList() {
   const listIcons = document.querySelectorAll(".listIcons");
-  function addingListListener(event) {
-    let result = confirm("Are you sure to delete?");
-    if (result) {
-      for (let i in lists) {
-        let li = event.target.parentElement.parentElement.textContent.trim();
-        if (lists[i].name === li) {
-          let list = event.target.parentElement.parentElement;
-          delete lists[i];
-          save();
-          list.remove();
-          let right = document.getElementById("right");
-          right.innerHTML = "";
-        }
-      }
-    }
-  }
+
   listIcons.forEach((btn) => {
     btn.addEventListener("click", addingListListener);
   });
+
+  function addingListListener(event) {
+    let list = event.target.parentElement.parentElement;
+    let li = event.target.parentElement.parentElement.textContent.trim();
+    for (let i in lists) {
+      if (lists[i].name === li) {
+        confirm("Are you sure to delete?");
+        delete lists[i];
+        list.remove();
+        save();
+        displayList();
+        break;
+      }
+    }
+  }
 }
 
 //checking a todoItem off the list
@@ -345,40 +344,59 @@ function checkbox() {
 
 function searchingItems() {
   let search = document.getElementById("search");
-
   search.addEventListener("input", function () {
     let searchTerm = search.value.toLowerCase();
-
     let todoItems = document.querySelectorAll(".todo-item");
     todoItems.forEach((item) => {
-      let itemText = item.firstChild.nextSibling.textContent.toLowerCase();
+      let itemText = item.querySelector("p").textContent.toLowerCase();
+      item.style.display = "none";
       if (itemText.includes(searchTerm)) {
         item.style.display = "";
-        //console.log(item)
-      } else {
-        item.style.display = "none";
       }
     });
   });
 }
 
 function editingItems() {
-  let taskContainer = document.querySelector(".taskContainer");
-  taskContainer.addEventListener("click", function () {
-    let todosToEdit = document.querySelectorAll(".todo-item");
-    todosToEdit.forEach((item) => {
-      let itemText = item.firstChild.nextSibling;
-      //console.log(itemText);
-      itemText.addEventListener("click", function () {
-        //console.log("we made it this far");
-        let orginalItem = itemText.textContent;
-        itemText.setAttribute("contenteditable", true);
-        itemText.addEventListener("keydown", (event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            itemText.setAttribute("contenteditable", false);
-            itemText.setAttribute("id", itemText.textContent);
-
+  let todosToEdit = document.querySelectorAll(".todo-item");
+  todosToEdit.forEach((item) => {
+    let itemText = item.querySelector("p");
+    item.querySelector("p").setAttribute("contenteditable", true);
+    item.querySelector("p").setAttribute("spellcheck", false);
+    item.querySelector("p").addEventListener("click", function () {
+      let orginalItem = itemText.textContent;
+      item.querySelector("p").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          item.querySelector("p").setAttribute("contenteditable", false);
+          item.querySelector("p").setAttribute("contenteditable", true);
+          for (let i in lists) {
+            for (let j in lists[i].toDos) {
+              if (lists[i].toDos[j].text === orginalItem)
+                lists[i].toDos[j].text = itemText.textContent;
+              save();
+            }
+          }
+        }
+      });
+      item.querySelector("p").addEventListener("keydown", (event) => {
+        if (event.key === "Tab") {
+          event.preventDefault();
+          item.querySelector("p").setAttribute("contenteditable", false);
+          item.querySelector("p").setAttribute("contenteditable", true);
+          for (let i in lists) {
+            for (let j in lists[i].toDos) {
+              if (lists[i].toDos[j].text === orginalItem)
+                lists[i].toDos[j].text = itemText.textContent;
+              save();
+            }
+          }
+        }
+      });
+      document.addEventListener("click", function () {
+        setTimeout(() => {
+          document.addEventListener("click", function () {
+            item.querySelector("p").setAttribute("contenteditable", true);
             for (let i in lists) {
               for (let j in lists[i].toDos) {
                 if (lists[i].toDos[j].text === orginalItem)
@@ -386,9 +404,22 @@ function editingItems() {
                 save();
               }
             }
-          }
-        });
+          });
+        }, 1000);
       });
     });
   });
+}
+function displayList(div) {
+  let right = document.getElementById("right");
+  if (div) {
+    right.innerHTML = div;
+  } else {
+    right.innerHTML = "";
+  }
+}
+function attachEventListeners() {
+  deletingItem();
+  checkbox();
+  editingItems();
 }
